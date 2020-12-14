@@ -45,7 +45,7 @@ void setup() {
     pinMode(inPin, INPUT); // Sets the echoPin as an Input
     Serial.begin(9600); // Starts the serial communication
     halfway = false;
-    halfwayDistance = 140;
+    halfwayDistance = 80;
     // Because of the sometimes unreliable inputs from the distance sensor we want it to be above the halfway point for a number of cycles.
     reliabilityCycles = 4;
     // There is also an offset by how far the distance sensor needs to detect a value.
@@ -67,6 +67,15 @@ void loop() {
       } else if (program == 1) {
         program = 2;
       } else if (program == 2) {
+        program = 3;
+      } else if (program == 3) {
+        program = 4;
+      } else if (program == 4) {
+        program = 5;
+      } else if (program == 5) {
+        halfway = false;
+        halfwayLedIndex = 0;
+        reliabilityCycles = 4;
         program = 0;
       }
     }
@@ -91,8 +100,8 @@ void loop() {
       // Calculating the distance
       distance= duration*0.034/2;
   
-  //    Serial.println("distance");
-  //    Serial.println(distance);
+      Serial.println("distance");
+      Serial.println(distance);
   
       // Turn the LEDS off.
       for (int led = 0; led < NUM_LEDS; led++) {
@@ -100,14 +109,19 @@ void loop() {
         leds[led] = CRGB::Black;
       }
       // Turn the LEDS on which need to be turned on.
-      for (int i = 0; i < led_width; i++) {
-        if (distance < halfwayDistance + 50) {
-          int ledIndex = int(distance) - offSet + i;
-          if (ledIndex < 0) {
-            ledIndex = 0;
-          }
-          giveLedColour(ledIndex);
-        }
+//      for (int i = 0; i < led_width; i++) {
+//        if (distance < halfwayDistance + 50) {
+          // Here we had a part of the strip following the user
+//          int ledIndex = int(distance) - offSet + i;
+//          if (ledIndex < 0) {
+//            ledIndex = 0;
+//          }
+//          giveLedColour(ledIndex);
+//        }
+//      }
+      int ledAmount = int(distance) + offSet;
+      for (int i = 0; i < ledAmount; i++) {
+        giveLedColour(i);
       }
     
       // If the sensor reliably spots that the user is halfway, it starts a preprogrammed end fase
@@ -129,14 +143,17 @@ void loop() {
     } else {
       
         giveLedColour(halfwayLedIndex);
-        halfwayLedIndex = halfwayLedIndex + 1;
+        giveLedColour(halfwayLedIndex+1);
+        giveLedColour(halfwayLedIndex+2);
+        halfwayLedIndex = halfwayLedIndex + 2;
   
         // We keep the program running untill the entire strip is lit.
         if (halfwayLedIndex > NUM_LEDS+1) {
-          // a delay of a few seconds!
-          delay(3000);
+          // a delay of a second!
+          delay(1000);
           halfway = false;
           halfwayLedIndex = 0;
+          reliabilityCycles = 4;
         }
     }
   } else if (program == 1) {
@@ -147,8 +164,23 @@ void loop() {
         // If the LED was on recently, we don't turn it off
         leds[led] = CRGB::White;
       }
+  } else if (program == 3) {
+      for (int led = 0; led < NUM_LEDS; led++) {
+        // If the LED was on recently, we don't turn it off
+        leds[led] = CRGB::Blue;
+      }
+  } else if (program == 4) {
+      for (int led = 0; led < NUM_LEDS; led++) {
+        // If the LED was on recently, we don't turn it off
+        leds[led] = CRGB::Green;
+      }
+  } else if (program == 5) {
+      for (int led = 0; led < NUM_LEDS; led++) {
+        // If the LED was on recently, we don't turn it off
+        leds[led] = CRGB::Red;
+      }
   }
-//  delay(25); /* the lower the value the faster your colors move (and vice versa) */
+  delay(25); /* the lower the value the faster your colors move (and vice versa) */
   FastLED.show();
 }
 
